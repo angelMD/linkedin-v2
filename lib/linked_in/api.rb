@@ -63,6 +63,8 @@ module LinkedIn
     def_delegators :@media, :summary,
                             :upload
 
+    def_delegators :@integrations, :ugc_share
+
     private ##############################################################
 
     def initialize_endpoints
