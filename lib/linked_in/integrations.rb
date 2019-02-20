@@ -36,5 +36,56 @@ module LinkedIn
       }
       post(path, MultiJson.dump(defaults.merge(options)), 'Content-Type' => 'application/json')
     end
+
+    # Uploads Integrations Asset to LinkedIn from a supplied URL.
+    #
+    # @see https://docs.microsoft.com/en-us/linkedin/consumer/integrations/self-serve/share-on-linkedin#create-an-image-share
+    #
+    # @options options [String] :source_url, the URL to the content to be uploaded.
+    # @options options [String] :owner, the URN of the entity posting the share.
+    # @options options [Numeric] :timeout, optional timeout value in seconds, defaults to 300.
+    # @return [LinkedIn::Mash]
+    #
+    def asset_upload(options = {})
+      source_url = options.delete(:source_url)
+      owner = options.delete(:owner)
+      timeout = options.delete(:timeout) || DEFAULT_TIMEOUT_SECONDS
+      path = '/v2/assets?action=registerUpload'
+
+      body = {
+        "registerUploadRequest": {
+          "recipes": [
+            "urn:li:digitalmediaRecipe:feedshare-image"
+          ],
+          "owner": owner,
+          "serviceRelationships": [
+            {
+              "relationshipType": "OWNER",
+              "identifier": "urn:li:userGeneratedContent"
+            }
+          ]
+        }
+      }
+
+      response = @connection.post(path, MultiJson.dump(body), 'Content-Type' => 'application/json')
+      parsed = Mash.from_json(response.body)
+      upload_url = parsed.value.uploadMechanism.first[1].uploadUrl
+      asset = parsed.value.asset
+
+      media = open(source_url, 'rb')
+
+      response =
+        @connection.post(upload_url) do |req|
+          req.headers['Accept'] = '*/*'
+          req.headers['Content-Length'] = media.size.to_s
+          req.headers['Content-Type'] = 'application/octet-stream'
+          req.headers['x-li-format'] = nil
+          req.options.timeout = timeout
+          req.options.open_timeout = timeout
+          req.body = media
+        end
+
+      return asset
+    end
   end
 end

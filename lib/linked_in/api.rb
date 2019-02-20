@@ -63,7 +63,8 @@ module LinkedIn
     def_delegators :@media, :summary,
                             :upload
 
-    def_delegators :@integrations, :ugc_share
+    def_delegators :@integrations, :ugc_share,
+                                   :asset_upload
 
     private ##############################################################
 
