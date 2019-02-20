@@ -75,6 +75,7 @@ module LinkedIn
       @communications = LinkedIn::Communications.new(@connection)
       @share_and_social_stream = LinkedIn::ShareAndSocialStream.new(@connection)
       @media = LinkedIn::Media.new(@connection)
+      @integrations = LinkedIn::Integrations.new(@connection)
       # @groups = LinkedIn::Groups.new(@connection) not supported by v2 API?
     end
 
